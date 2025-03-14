@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AboutUsIntroduction {
+  id Int @id @default(autoincrement())
+  mainQuoteContent String @map("main_quote_content")
+  aboutUsContent String @map("about_us_content")
+  whyChooseUsContent String @map("why_choose_us")
+  ourDifferenceContent String @map("our_difference_content")
+  ourCultureContent String @map("our_culture_content")
+
+  thumbnailId Int? @unique @map("thumbnail_id")
+  thumbnail Photo? @relation(fields: [thumbnailId], references: [id])
+
+  @@map("about_us_introductions")
+}
+
+model CatalogItem {
+  id Int @id @default(autoincrement())
+  name String
+  type CatalogItemType
+  summary String?
+  detail String
+
+  @@map("catalog_items")
+}
+
+model CatalogItemPhoto {
+  catalogItemId Int @map("catalog_item_id")
+  photoId Int @unique @map("photo_id")
+
+  photo Photo @relation(fields: [photoId], references: [id])
+  @@map("catalog_item_photos")
+}
+
+model Certificate {
+  id Int @id @default(autoincrement())
+  name String
+  photoId Int @unique
+  
+  photo Photo @relation(fields: [photoId], references: [id])
+  @@map("certificates")
+}
+
+model Contact {
+  id Int @id @default(autoincrement())
+  type ContactType
+  content String
+
+  @@map("contacts")
+}
+
+model Enquiry {
+  id Int @id @default(autoincrement())
+  fullName String @map("full_name")
+  email String?
+  phoneNumber String @map("phone_number")
+  content String
+  receivedDateTime DateTime @default(now()) @map("received_datetime")
+  isCompleted Boolean @default(false) @map("is_completed")
+
+  @@map("enquiries")
+}
+
+model GeneralSettings {
+  id Int @id @default(autoincrement())
+  applicationName String @map("application_name")
+  applicationShortName String @map("application_short_name")
+  isUnderMaintainance Boolean @map("is_under_maintainance")
+
+  @@map("general_settings")
+}
+
+model Member {
+  id Int @id @default(autoincrement())
+  fullName String @map("full_name")
+  roleName String @map("role_name")
+  description String
+  thumbnailId Int @unique @map("thumbnail_id")
+
+  thumbnail Photo @relation(fields: [thumbnailId], references: [id])
+  @@map("members")
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  title String
+  normalizedTitle String @unique @map("normalized_title")
+  thumbnailId Int @unique @map("thumbnail_id")
+  content String
+  createdDateTime DateTime @default(now()) @map("created_datetime")
+  updatedDateTime DateTime? @map("updated_datetime")
+  isPinned Boolean @default(false) @map("is_pinned")
+  isPublished Boolean @default(false) @map("is_published")
+  views Int @default(0)
+  userId Int? @unique @map("user_id")
+
+  user User? @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  @@map("posts")
+}
+
+model SliderItem {
+  id Int @id @default(autoincrement())
+  title String?
+  thumbnailId Int @map("thumbnail_id")
+  index Int
+
+  thumbnail Photo @relation(fields: [thumbnailId], references: [id])
+  @@map("slider_items")
+}
+
+model SummaryItem {
+  id Int @id @default(autoincrement())
+  name String
+  summaryContent String? @map("summary_content")
+  detailContent String @map("detail_content")
+  thumbnailId Int @unique @map("thumbnail_id")
+
+  thumbnail Photo @relation(fields: [thumbnailId], references: [id])
+  @@map("summary_items")
+}
+
+model TrafficByDate {
+  id Int @id @default(autoincrement())
+  recordedDate DateTime @default(now()) @map("recorded_date")
+  accessCount Int @map("access_count")
+  guestCount Int @map("guest_count")
+
+  hours TrafficByHour[]
+  @@map("traffic_by_dates")
+}
+
+model TrafficByHour {
+  id Int @id @default(autoincrement())
+  recordedDate DateTime @default(now()) @map("recorded_date")
+  accessCount Int @map("access_count")
+  guestCount Int @map("guest_count")
+  dateId Int @map("date_id")
+  
+  date TrafficByDate @relation(fields: [dateId], references: [id])
+  ipAddresses TrafficByIpAddress[]
+  @@map("traffic_by_hours")
+}
+
+model TrafficByIpAddress {
+  id Int @id @default(autoincrement())
+  ipAddress String @map("ip_address")
+  accessCount Int @default(0) @map("access_count")
+  lastAccessDateTime DateTime @map("last_access_datetime")
+  lastUserAgent String @map("last_user_agent")
+  hourId Int @map("hour_id")
+  
+  hour TrafficByHour @relation(fields: [hourId], references: [id])
+  @@map("traffic_by_ip_addresses")
+}
+
+model Photo {
+  id Int @id @default(autoincrement())
+  data Bytes
+
+  aboutUsIntroduction AboutUsIntroduction?
+  catalogItemPhotos CatalogItemPhoto[]
+  certificate Certificate?
+  member Member?
+  sliderItems SliderItem[]
+  summaryItems SummaryItem[]
+  @@map("photos")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  userName String @map("username")
+  passwordHash String @map("password_hash")
+  role Role
+
+  post Post[]
+  @@map("users")
+}
+
+enum Role {
+  DEVELOPER
+  ADMIN
+}
+
+enum ThumbnailType {
+  PHOTO
+  VIDEO
+}
+
+enum CatalogItemType {
+  COURSE
+  SERVICE
+  PRODUCT
+}
+
+enum ContactType {
+  PHONENUMBER
+  ZALONUMBER
+  EMAIL
+  ADDRESS
+}
