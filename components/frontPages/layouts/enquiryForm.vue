@@ -1,0 +1,100 @@
+<script setup lang="ts">
+// States.
+const isHydrated = ref<boolean>(false);
+
+// Hooks.
+onMounted(() => {
+    isHydrated.value = true;
+})
+</script>
+
+<template>
+    <div class="container-fluid bg-success">
+        <div class="row justify-content-center p-4 pb-5">
+            <div class="col col-xxl-4 col-xl-5 col-lg-6 col-md-7 col-12">
+                <div class="mb-3 text-white fs-5 d-flex flex-column">
+                    <div class="fs-2">Bạn cần tư vấn?</div>
+                    <span>Hãy gửi câu hỏi cho chúng tôi</span>
+                    <span class="small opacity-75">
+                        * Chúng tôi sẽ không chia sẻ thông tin của bạn.
+                    </span>
+                </div>
+
+                <div id="vue-app">
+                    <form
+                        class="bg-white rounded-4 shadow p-3 w-100
+                                d-flex flex-column align-items-stretch"
+                        action="#"
+                        id="enquiry-form"
+                    >
+                        <!-- FullName -->
+                        <div class="form-group mb-3">
+                            <div class="form-floating required">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="UserName"
+                                    name="UserName"
+                                    placeholder=""
+                                    maxlength="50"
+                                />
+                                <label class="required" for="UserName">Họ và tên</label>
+                            </div>
+                        </div>
+
+                        <!-- PhoneNumber -->
+                        <div class="form-floating mb-3">
+                            <input
+                                type="tel"
+                                class="form-control"
+                                id="PhoneNumber"
+                                name="PhoneNumber"
+                                placeholder=""
+                            />
+                            <label class="required" for="PhoneNumber">Số điện thoại</label>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-floating mb-3">
+                            <input
+                                type="email"
+                                class="form-control"
+                                id="Email"
+                                name="Email"
+                                placeholder=""
+                            />
+                            <label for="Email">Địa chỉ email</label>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="form-floating mb-3">
+                            <textarea
+                                class="form-control"
+                                id="Content"
+                                name="Content"
+                                style="min-height: 200px"
+                                placeholder=""
+                            ></textarea>
+                            <label class="required" for="Content">Nội dung</label>
+                        </div>
+
+                        <!-- Submit -->
+                        <button
+                            type="submit"
+                            class="btn btn-outline-success align-self-end"
+                            :disabled="!isHydrated"
+                        >
+                            Gửi
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.container-fluid {
+    margin-top: 30px;
+}
+</style>

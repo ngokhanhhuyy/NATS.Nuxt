@@ -13,5 +13,20 @@
         "Droid Sans",
         "Helvetica Neue",
         sans-serif !important;
+    --bs-body-font-size: 19px !important;
 }
 
+.fade-enter-active,
+.fade-leave-active {
+    transition: .5s ease;
+}
+
+.fade-leave-to,
+.fade-enter-from {
+    opacity: 0;
+}
+
+.fade-leave-from,
+.fade-enter-to {
+    opacity: 1;
+}

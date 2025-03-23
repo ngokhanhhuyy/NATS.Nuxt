@@ -1,8 +1,35 @@
 <script lang="ts">
-interface SliderItemDetailModel {
-    id: number;
-    url: string;
-    index: number;
+type Model = {
+    sliderItems: SliderItemDetailModel[];
+    summaryItems: SummaryItemDetailModel[];
+    aboutUsIntroduction: AboutUsIntroductionDetailModel;
+    catalogItems: CatalogItemBasicModel[];
+    generalSettings: GeneralSettingsDetailModel;
+}
+
+async function fetchAsync(): Promise<Model> {
+    const [
+        sliderItemResponseDtos,
+        summaryItemResponseDtos,
+        aboutUsIntroductionResponseDto,
+        catalogItemResponseDtos,
+        generalSettingsResponseDto
+    ] = await Promise.all([
+        getSliderItemListAsync(),
+        getSummaryItemListAsync(),
+        getAboutUsIntroductionAsync(),
+        getCatalogItemListAsync(),
+        getGeneralSettingsAsync()
+    ]);
+
+    return {
+        sliderItems: sliderItemResponseDtos.map(dto => createSliderItemDetailModel(dto)),
+        summaryItems: summaryItemResponseDtos.map(dto => createSummaryItemDetailModel(dto)),
+        aboutUsIntroduction: createAboutUsIntroductionDetailModel(
+            aboutUsIntroductionResponseDto),
+        catalogItems: catalogItemResponseDtos.map(dto => createCatalogItemBasicModel(dto)),
+        generalSettings: createGeneralSettingsDetailModel(generalSettingsResponseDto)
+    }
 }
 </script>
 
@@ -11,21 +38,20 @@ import type { Carousel } from "bootstrap";
 
 // Page meta.
 definePageMeta({
-    layout: "front-page",
+    layout: "front-pages-default",
 });
 
-// States.
-const sliderItems = useState<SliderItemDetailModel[]>("sliderItems", () => {
-    return Array.from(Array(10).keys()).map((_, index) => {
-        const height = Math.round((Math.random() * 5 + 5) * 100);
-        return {
-            id: index + 1,
-            url: `https://placehold.jp/1920x${height}.png`,
-            index: index
-        };
-    });
-});
+// Head.
+useHead({ title: "Trang chủ" });
+
+// Fetch.
+const isHydrated = ref<boolean>(false);
 const carouselController = ref<Carousel>();
+const { data: model } = await useAsyncData("homePage", fetchAsync);
+
+if (model.value == null) {
+    throw createError({ statusCode: 404, statusMessage: "Page not found" });
+}
 
 // Hooks.
 onMounted(() => {
@@ -36,65 +62,55 @@ onMounted(() => {
         touch: false
     });
     carouselController.value.cycle();
-    console.log("Mounted");
+    refreshNuxtData("homeData");
+    isHydrated.value = true;
 });
+
+onUnmounted(() => {
+    carouselController.value?.dispose();
+});
+
+// Computed.
+const serviceItems = computed<CatalogItemBasicModel[]>(() => {
+    return model.value?.catalogItems
+        .filter(item => item.type === CatalogItemType.Service) ?? [];
+})
+
+const courseItems = computed<CatalogItemBasicModel[]>(() => {
+    return model.value?.catalogItems
+        .filter(item => item.type === CatalogItemType.Course) ?? [];
+})
+
+const productItems = computed<CatalogItemBasicModel[]>(() => {
+    return model.value?.catalogItems
+        .filter(item => item.type === CatalogItemType.Product) ?? [];
+})
 </script>
 
 <template>
-    <div class="container-fluid">
-        <!-- Slider -->
-        <div id="slider" class="carousel slide">
-            <div class="carousel-inner">
-                <div
-                    v-for="(item, index) in sliderItems" :key="item.id"
-                    class="carousel-item"
-                    :class="{ active: index == 1 }"
-                >
-                    <img
-                        :src="item.url"
-                        class="carousel-img d-block w-100"
-                        alt="..."
-                    />
-                </div>
-            </div>
-            <button
-                class="carousel-control-prev"
-                type="button"
-                data-bs-target="#homePageSlider"
-                data-bs-slide="prev"
-            >
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button
-                class="carousel-control-next"
-                type="button"
-                data-bs-target="#homePageSlider"
-                data-bs-slide="next"
-            >
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-        </div>
+    <div class="container-fluid p-0" v-if="model">
+        <!-- SliderItemList -->
+        <FrontPagesHomeSliderItemList :model="model.sliderItems" />
 
-        <!-- Content -->
-        <div class="container mt-3">
-            <div class="row g-3">
-                <div class="col col-4">
-                    
-                </div>
-            </div>
-        </div>
+        <!-- ApplicationName -->
+        <FrontPagesHomeApplicationName :model="model.generalSettings.applicationName" />
+
+        <!-- SummaryItemList -->
+        <FrontPagesHomeSummaryItemList :model="model.summaryItems" />
+
+        <!-- AboutUsIntroduction -->
+        <FrontPagesHomeAboutUsIntroduction :model="model.aboutUsIntroduction" />
+
+        <!-- CatalogItemList - Services -->
+        <FrontPagesHomeCatalogItemList :model="serviceItems" />
+
+        <!-- CatalogItemList - Courses -->
+        <FrontPagesHomeCatalogItemList :model="courseItems" />
+
+        <!-- CatalogItemList - Products -->
+        <FrontPagesHomeCatalogItemList :model="productItems" />
+
+        <!-- EnquiryForm -->
+        <FrontPagesLayoutsEnquiryForm />
     </div>
 </template>
-
-<style scoped>
-.carousel {
-    height: 500px;
-}
-
-.carousel-img {
-    max-height: 500px;
-    object-fit: cover;
-}
-</style>

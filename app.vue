@@ -7,5 +7,4 @@
             <NuxtPage />
         </NuxtLayout>
     </div>
-    <button class="btn btn-primary">Hello</button>
 </template>
