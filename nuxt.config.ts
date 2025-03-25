@@ -4,7 +4,7 @@ export default defineNuxtConfig({
     imports: {
         dirs: ["composables/**/*", "enums/**/*", "models/**/*", "services/**/*"]
     },
-    devtools: { enabled: true },
+    devtools: { enabled: false },
     devServer: {
         host: "0.0.0.0",
         port: 5173,
